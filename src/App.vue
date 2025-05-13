@@ -1,6 +1,21 @@
+<script>
+import todos from './data/todos'
+
+export default {
+  data() {
+    return {
+      todos,
+    }
+  },
+  mounted() {
+    console.log(this.todos)
+  },
+}
+</script>
+
 <template>
   <div class="todoapp">
-    <h1 class="todoapp__title">todos</h1>
+    <h1 class="todoapp__title">todos.length</h1>
 
     <div class="todoapp__content">
       <header class="todoapp__header">
@@ -12,41 +27,24 @@
       </header>
 
       <section class="todoapp__main">
-        <div class="todo completed">
+        <div
+          class="todo"
+          :class="{ completed: todo.completed }"
+          v-for="(todo, index) of todos"
+          :key="todo.id"
+        >
           <label class="todo__status-label">
-            <input type="checkbox" class="todo__status" checked />
+            <!-- <input
+              type="checkbox"
+              class="todo__status"
+              :checked="todo.completed"
+              @change="todo.completed = !todo.completed"
+            /> -->
+
+            <input type="checkbox" class="todo__status" v-model="todo.completed" />
           </label>
 
-          <span class="todo__title">Completed Todo</span>
-
-          <button class="todo__remove">x</button>
-
-          <div class="modal overlay">
-            <div class="modal-background has-background-white-ter"></div>
-            <div class="loader"></div>
-          </div>
-        </div>
-
-        <div class="todo">
-          <label class="todo__status-label">
-            <input type="checkbox" class="todo__status" />
-          </label>
-
-          <span class="todo__title">Not Completed Todo</span>
-          <button class="todo__remove">x</button>
-
-          <div class="modal overlay">
-            <div class="modal-background has-background-white-ter"></div>
-            <div class="loader"></div>
-          </div>
-        </div>
-
-        <div class="todo">
-          <label class="todo__status-label">
-            <input type="checkbox" class="todo__status" />
-          </label>
-
-          <form>
+          <form v-if="false">
             <input
               type="text"
               class="todo__title-field"
@@ -55,21 +53,13 @@
             />
           </form>
 
-          <div class="modal overlay">
-            <div class="modal-background has-background-white-ter"></div>
-            <div class="loader"></div>
-          </div>
-        </div>
+          <template v-else>
+            <span class="todo__title">{{ todo.title }}</span>
 
-        <div class="todo">
-          <label class="todo__status-label">
-            <input type="checkbox" class="todo__status" />
-          </label>
+            <button class="todo__remove" @click="todos.splice(index, 1)">x</button>
+          </template>
 
-          <span class="todo__title">Todo is being saved now</span>
-          <button class="todo__remove">x</button>
-
-          <div class="modal overlay is-active">
+          <div class="modal overlay" :class="{ 'is-active': false }">
             <div class="modal-background has-background-white-ter"></div>
             <div class="loader"></div>
           </div>
