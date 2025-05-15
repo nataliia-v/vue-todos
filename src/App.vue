@@ -1,16 +1,35 @@
 <script>
-import todos from './data/todos'
+import StatusFilter from './components/StatusFilter.vue'
 
 export default {
+  components: {
+    Filter: StatusFilter,
+  },
   data() {
+    let todos = []
+    const jsonData = localStorage.getItem('todos') || '[]'
+
+    try {
+      todos = JSON.parse(jsonData)
+    } catch (e) {}
+
     return {
       todos,
       title: '',
+      status: 'all',
     }
   },
   computed: {
     activeTodos() {
       return this.todos.filter((todo) => !todo.completed)
+    },
+  },
+  watch: {
+    todos: {
+      handler() {
+        localStorage.setItem('todos', JSON.stringify(this.todos))
+      },
+      deep: true,
     },
   },
   methods: {
@@ -89,13 +108,7 @@ export default {
       <footer class="todoapp__footer">
         <span class="todo-count"> {{ activeTodos.length }} items left </span>
 
-        <nav class="filter">
-          <a href="#/" class="filter__link selected"> All </a>
-
-          <a href="#/active" class="filter__link"> Active </a>
-
-          <a href="#/completed" class="filter__link"> Completed </a>
-        </nav>
+        <Filter v-model="status" />
 
         <button class="todoapp__clear-completed" v-if="activeTodos.length > 0">
           Clear completed
