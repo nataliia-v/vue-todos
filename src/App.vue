@@ -2,21 +2,16 @@
 import StatusFilter from './components/StatusFilter.vue'
 import TodoItem from './components/TodoItem.vue'
 
+import { getTodos, createTodo, updateTodo, deleteTodo } from './api/todos'
+
 export default {
   components: {
     Filter: StatusFilter,
     TodoItem,
   },
   data() {
-    let todos = []
-    const jsonData = localStorage.getItem('todos') || '[]'
-
-    try {
-      todos = JSON.parse(jsonData)
-    } catch (e) {}
-
     return {
-      todos,
+      todos: [],
       title: '',
       status: 'all',
     }
@@ -38,25 +33,60 @@ export default {
       }
     },
   },
-  watch: {
-    todos: {
-      handler() {
-        localStorage.setItem('todos', JSON.stringify(this.todos))
-      },
-      deep: true,
-    },
+  // watch: {
+  //   todos: {
+  //     handler() {
+  //       localStorage.setItem('todos', JSON.stringify(this.todos))
+  //     },
+  //     deep: true,
+  //   },
+  // },
+  mounted() {
+    getTodos()
+      .then(({ data }) => {
+        this.todos = data
+      })
+      .catch((error) => {
+        console.error('Error fetching todos:', error)
+      })
+      .finally(() => {
+        console.log('Todos fetched successfully')
+      })
   },
   methods: {
     handleSubmit() {
       if (this.title.trim() === '') {
         return
       }
-      this.todos.push({
-        id: Date.now(),
-        title: this.title,
-        completed: false,
+
+      createTodo(this.title)
+        .then(({ data }) => {
+          this.todos = [...this.todos, data]
+          this.title = ''
+        })
+        .catch((error) => {
+          console.error('Error creating todo:', error)
+        })
+        .finally(() => {
+          console.log('Todo created successfully')
+        })
+    },
+
+    updateTodo({ id, title, completed }) {
+      updateTodo({ id, title, completed }).then(({ data }) => {
+        this.todos = this.todos.map((todo) => {
+          if (todo.id === id) {
+            return { ...todo, title, completed }
+          }
+          return todo
+        })
       })
-      this.title = ''
+    },
+
+    deleteTodo(id) {
+      deleteTodo(id).then(() => {
+        this.todos = this.todos.filter((todo) => todo.id !== id)
+      })
     },
   },
 }
@@ -85,8 +115,8 @@ export default {
           v-for="(todo, index) of visibleTodos"
           :key="todo.id"
           :todo="todo"
-          @update="Object.assign(todo, $event)"
-          @delete="todos.splice(todos.indexOf(todo), 1)"
+          @update="updateTodo"
+          @delete="deleteTodo(todo.id)"
         />
       </TransitionGroup>
 
